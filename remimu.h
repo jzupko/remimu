@@ -866,12 +866,10 @@ REMIMU_FUNC_VISIBILITY int64_t regex_match(const RegexToken * tokens, const char
     (void)text;
 
 #ifdef REGEX_VERBOSE
-    const uint8_t verbose = 1;
+#   define IF_VERBOSE(X) { X }
 #else
-    const uint8_t verbose = 0;
+#   define IF_VERBOSE(X) {}
 #endif
-
-#define IF_VERBOSE(X) { if (verbose) { X } }
 
 #ifdef REGEX_STACK_SMOL
     const uint16_t stack_size_max = 256;
@@ -1008,7 +1006,7 @@ REMIMU_FUNC_VISIBILITY int64_t regex_match(const RegexToken * tokens, const char
                 return -2;
             }
         }
-        IF_VERBOSE(printf("k: %u\ti: %zu\tl: %zu\tstack_n: %d\n", k, i, limit, stack_n);)
+        IF_VERBOSE(printf("k: %u\ti: %zu\tl: %d\tstack_n: %d\n", k, (size_t)i, limit, (int)stack_n);)
         _P_TEXT_HIGHLIGHTED();
         if (tokens[k].kind == REMIMU_KIND_CARET)
         {
