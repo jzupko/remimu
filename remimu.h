@@ -13,6 +13,10 @@
 #define REMIMU_LOG_ERROR puts
 #endif
 
+#ifndef REMIMU_LOG_ERRORF
+#define REMIMU_LOG_ERRORF printf
+#endif
+
 #ifndef REMIMU_ITERATION_LIMIT
 #define REMIMU_ITERATION_LIMIT 0 // Set to non-zero to enable an interation limit
 #endif
@@ -47,10 +51,6 @@ FUNCTIONS
         uint16_t cap_slots,         // Number of allowed capture info output slots.
         int64_t * cap_pos,          // Capture position info output buffer.
         int64_t * cap_span          // Capture length info output buffer.
-    )
-
-    void print_regex_tokens(
-        RegexToken * tokens     // Regex tokens to spew to stdout, for debugging.
     )
 
 PERFORMANCE
@@ -129,9 +129,6 @@ USAGE
     printf("Match length: %zd\n", matchlen);
     for (int i = 0; i < 5; i++)
         printf("Capture %d: %zd plus %zd\n", i, cap_pos[i], cap_span[i]);
-
-    // for debugging
-    print_regex_tokens(tokens);
 
 LICENSE
 
@@ -667,7 +664,7 @@ REMIMU_FUNC_VISIBILITY int regex_parse(const char * pattern, RegexToken * tokens
                 }
                 else
                 {
-                    printf("unknown/unsupported escape sequence in character class (\\%c)\n", c);
+                    REMIMU_LOG_ERRORF("unknown/unsupported escape sequence in character class (\\%c)\n", c);
                     return -1; // unknown/unsupported escape sequence
                 }
             }
@@ -1385,7 +1382,7 @@ REMIMU_FUNC_VISIBILITY int64_t regex_match(const RegexToken * tokens, const char
             }
             else
             {
-                fprintf(stderr, "unimplemented token kind %d\n", tokens[k].kind);
+                REMIMU_LOG_ERRORF("unimplemented token kind %d\n", tokens[k].kind);
                 REMIMU_ASSERT(0);
             }
         }
@@ -1395,7 +1392,7 @@ REMIMU_FUNC_VISIBILITY int64_t regex_match(const RegexToken * tokens, const char
     if (caps != 0)
     {
         //printf("stack_n: %d\n", stack_n);
-        fflush(stdout);
+        //fflush(stdout);
         for (size_t n = 0; n < stack_n; n++)
         {
             RegexMatcherState s = rewind_stack[n];
@@ -1426,80 +1423,6 @@ REMIMU_FUNC_VISIBILITY int64_t regex_match(const RegexToken * tokens, const char
     #undef IF_VERBOSE
 
     return i;
-}
-
-REMIMU_FUNC_VISIBILITY void print_regex_tokens(RegexToken * tokens)
-{
-    const char * kind_to_str[] = {
-        "NORMAL",
-        "OPEN",
-        "NCOPEN",
-        "CLOSE",
-        "OR",
-        "CARET",
-        "DOLLAR",
-        "BOUND",
-        "NBOUND",
-        "END",
-    };
-    const char * mode_to_str[] = {
-        "GREEDY",
-        "POSSESS",
-        "LAZY",
-    };
-    for (int k = 0;; k++)
-    {
-        printf("%s\t%s\t", kind_to_str[tokens[k].kind], mode_to_str[tokens[k].mode]);
-
-        int c_old = -1;
-        for (int c = 0; c < (tokens[k].kind ? 0 : 256); c++)
-        {
-            #define _PRINT_C_SMART(c) { \
-                if (c >= 0x20 && c <= 0x7E) \
-                    printf("%c", c); \
-                else \
-                    printf("\\x%02x", c); \
-            }
-
-            if (_REGEX_CHECK_MASK(k, c))
-            {
-                if (c_old == -1)
-                    c_old = c;
-            }
-            else if (c_old != -1)
-            {
-                if (c - 1 == c_old)
-                {
-                    _PRINT_C_SMART(c_old)
-                    c_old = -1;
-                }
-                else if (c - 2 == c_old)
-                {
-                    _PRINT_C_SMART(c_old)
-                    _PRINT_C_SMART(c_old + 1)
-                    c_old = -1;
-                }
-                else
-                {
-                    _PRINT_C_SMART(c_old)
-                    printf("-");
-                    _PRINT_C_SMART(c - 1)
-                    c_old = -1;
-                }
-            }
-        }
-
-        /*
-        printf("\t");
-        for (int i = 0; i < 16; i++)
-            printf("%04x", tokens[k].mask[i]);
-        */
-
-        printf("\t{%d,%d}\t(%d)\n", tokens[k].count_lo, tokens[k].count_hi - 1, tokens[k].pair_offset);
-
-        if (tokens[k].kind == REMIMU_KIND_END)
-            break;
-    }
 }
 
 #undef _REGEX_CHECK_MASK
