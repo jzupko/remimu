@@ -10,10 +10,12 @@
 #endif
 
 #ifndef REMIMU_LOG_ERROR
+#include <stdio.h>
 #define REMIMU_LOG_ERROR puts
 #endif
 
 #ifndef REMIMU_LOG_ERRORF
+#include <stdio.h>
 #define REMIMU_LOG_ERRORF printf
 #endif
 
@@ -22,6 +24,7 @@
 #endif
 
 #ifndef REMIMU_ASSERT
+#include <assert.h>
 #define REMIMU_ASSERT(x) assert(x)
 #endif
 
@@ -137,10 +140,8 @@ LICENSE
 */
 
 #include <stdint.h>
-#include <stdio.h>
 #include <stddef.h>
 #include <string.h>
-#include <assert.h>
 
 REMIMU_CONST_VISIBILITY int REMIMU_FLAG_DOT_NO_NEWLINES = 1;
 
