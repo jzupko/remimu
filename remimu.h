@@ -826,8 +826,10 @@ REMIMU_FUNC_VISIBILITY int regex_parse(const char * pattern, RegexToken * tokens
         }
     }
 
-    #undef _REGEX_PUSH_TOKEN
+    #undef _REGEX_SET_MASK_ALL
     #undef _REGEX_SET_MASK
+    #undef _REGEX_PUSH_TOKEN
+    #undef _REGEX_DO_INVERT
     #undef _REGEX_CLEAR_TOKEN
 
     return 0;
@@ -1417,9 +1419,11 @@ REMIMU_FUNC_VISIBILITY int64_t regex_match(const RegexToken * tokens, const char
         }
     }
 
-    #undef _REWIND_DO_SAVE
     #undef _REWIND_OR_ABORT
     #undef _REGEX_CHECK_IS_W
+    #undef _REWIND_DO_SAVE
+    #undef _REWIND_DO_SAVE_DUMMY
+    #undef _REWIND_DO_SAVE_RAW
     #undef _P_TEXT_HIGHLIGHTED
     #undef IF_VERBOSE
 
